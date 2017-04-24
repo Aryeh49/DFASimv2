@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -90,11 +91,6 @@ public class CustomView extends View {
 
         canvas.drawColor(Color.WHITE);
         for(State x: dfa.getStates()){
-            if(dfa.getAcceptStates().contains(x)){
-                Paint p = new Paint();
-                p.setColor(Color.BLACK);
-                canvas.drawCircle(x.getX(), x.getY(), radius + 30, p);
-            }
             if(x == selectedState1 || x == selectedState2) {
                 Paint p = new Paint();
                 p.setColor(Color.GREEN);
@@ -106,14 +102,53 @@ public class CustomView extends View {
                 p.setColor(Color.BLUE);
                 canvas.drawCircle(x.getX(), x.getY(), radius, p);
             }
+            if(dfa.getAcceptStates().contains(x)) {
+                Paint p = new Paint();
+                p.setColor(Color.WHITE);
+                canvas.drawCircle(x.getX(), x.getY(), radius - 10, p);
+            }
 
         }
         for(Transition t: dfa.getTransitions()){
 
 
-            canvas.drawLine(t.source.getX(), t.source.getY(), t.destination.getX(), t.destination.getY(), new Paint(Color.BLACK));
-
+            drawArrow(canvas, t.source.getX(), t.source.getY(), t.destination.getX(), t.destination.getY());
         }
+    }
+    private void drawArrow(Canvas canvas, float srcX, float srcY, float destX, float destY){
+        double theta = Math.atan((destY - srcY) / (destX - srcX));
+        float x1,y1,x2,y2;
+        if(destX > srcX && destY > srcY){
+             x1 = srcX + (float) (radius * Math.cos(theta));
+             y1 =  srcY + (float) (radius * Math.sin(theta));
+             x2 =  destX + (float) (radius * Math.cos(theta));
+             y2 =  destY + (float) (radius * Math.sin(theta));
+        } else if(destX > srcX && destY < srcY){
+            x1 = srcX + (float) (radius * Math.cos(theta));
+            y1 =  srcY + (float) (radius * Math.sin(theta));
+            x2 =  destX - (float) (radius * Math.cos(theta));
+            y2 =  destY - (float) (radius * Math.sin(theta));
+        } else if(destX < srcX && destY > srcY){
+            x1 = srcX + (float) (radius * Math.cos(theta));
+            y1 =  srcY + (float) (radius * Math.sin(theta));
+            x2 =  destX + (float) (radius * Math.cos(theta));
+            y2 =  destY + (float) (radius * Math.sin(theta));
+        }
+        else{
+             x1 = srcX + (float) (radius * Math.cos(theta));
+             y1 =  srcY + (float) (radius * Math.sin(theta));
+             x2 =  destX + (float) (radius * Math.cos(theta));
+             y2 =  destY  + (float) (radius * Math.sin(theta));
+        }
+
+        canvas.drawLine(x1, y1, x2, y2, new Paint());
+        double theta1 = 45 + Math.atan((y2 - y1)/(x2 - x1));
+        double dx = radius * Math.cos(theta);
+        double dy = radius * Math.sin(theta);
+        canvas.drawLine(x2, y2, (float) (x2 - dx), (float) (y2 + dy), new Paint());
+        canvas.drawLine(x2, y2, (float) (x2 + dx), (float) (y2 + dy), new Paint());
+
+
     }
 
     @Override
@@ -152,11 +187,11 @@ public class CustomView extends View {
                                             //TODO
                                             break;
                                         case 2:
-                                            dfa.setStartState(selectedState1);
+                                            dfa.setStartState(state);
                                             invalidate();
                                             break;
                                         case 3:
-                                            dfa.getAcceptStates().add(selectedState1);
+                                            dfa.getAcceptStates().add(state);
                                             invalidate();
                                             break;
                                     }
