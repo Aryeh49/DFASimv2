@@ -90,6 +90,11 @@ public class CustomView extends View {
         if (dfa == null) return;
 
         canvas.drawColor(Color.WHITE);
+        for(Transition t: dfa.getTransitions()){
+
+
+            drawArrow(canvas, t.source.getX(), t.source.getY(), t.destination.getX(), t.destination.getY());
+        }
         for(State x: dfa.getStates()){
             if(x == selectedState1 || x == selectedState2) {
                 Paint p = new Paint();
@@ -109,45 +114,32 @@ public class CustomView extends View {
             }
 
         }
-        for(Transition t: dfa.getTransitions()){
 
-
-            drawArrow(canvas, t.source.getX(), t.source.getY(), t.destination.getX(), t.destination.getY());
-        }
     }
     private void drawArrow(Canvas canvas, float srcX, float srcY, float destX, float destY){
-        double theta = Math.atan((destY - srcY) / (destX - srcX));
-        float x1,y1,x2,y2;
-        if(destX > srcX && destY > srcY){
-             x1 = srcX + (float) (radius * Math.cos(theta));
-             y1 =  srcY + (float) (radius * Math.sin(theta));
-             x2 =  destX + (float) (radius * Math.cos(theta));
-             y2 =  destY + (float) (radius * Math.sin(theta));
-        } else if(destX > srcX && destY < srcY){
-            x1 = srcX + (float) (radius * Math.cos(theta));
-            y1 =  srcY + (float) (radius * Math.sin(theta));
-            x2 =  destX - (float) (radius * Math.cos(theta));
-            y2 =  destY - (float) (radius * Math.sin(theta));
-        } else if(destX < srcX && destY > srcY){
-            x1 = srcX + (float) (radius * Math.cos(theta));
-            y1 =  srcY + (float) (radius * Math.sin(theta));
-            x2 =  destX + (float) (radius * Math.cos(theta));
-            y2 =  destY + (float) (radius * Math.sin(theta));
+        if (srcX == destX && srcY == destY){
+            
         }
-        else{
-             x1 = srcX + (float) (radius * Math.cos(theta));
-             y1 =  srcY + (float) (radius * Math.sin(theta));
-             x2 =  destX + (float) (radius * Math.cos(theta));
-             y2 =  destY  + (float) (radius * Math.sin(theta));
+        else {
+            Paint p = new Paint();
+            double theta = destX - srcX > 0 ? Math.atan((destY - srcY) / (destX - srcX)) : Math.PI + Math.atan((destY - srcY) / (destX - srcX));
+            float x1, y1, x2, y2;
+
+
+            x2 = destX - (float) (radius * Math.cos(theta));
+            y2 = destY - (float) (radius * Math.sin(theta));
+
+
+            canvas.drawLine(srcX, srcY, x2, y2, p);
+            double theta1 = Math.PI / 4 + theta;
+            double dx = radius * Math.cos(theta1);
+            double dy = radius * Math.sin(theta1);
+            canvas.drawLine(x2, y2, (float) (x2 - dx), (float) (y2 - dy), p);
+            theta1 = -Math.PI / 4 + theta;
+            dx = radius * Math.cos(theta1);
+            dy = radius * Math.sin(theta1);
+            canvas.drawLine(x2, y2, (float) (x2 - dx), (float) (y2 - dy), p);
         }
-
-        canvas.drawLine(x1, y1, x2, y2, new Paint());
-        double theta1 = 45 + Math.atan((y2 - y1)/(x2 - x1));
-        double dx = radius * Math.cos(theta);
-        double dy = radius * Math.sin(theta);
-        canvas.drawLine(x2, y2, (float) (x2 - dx), (float) (y2 + dy), new Paint());
-        canvas.drawLine(x2, y2, (float) (x2 + dx), (float) (y2 + dy), new Paint());
-
 
     }
 
