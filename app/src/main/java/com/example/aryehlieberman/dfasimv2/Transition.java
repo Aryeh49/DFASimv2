@@ -5,9 +5,9 @@ package com.example.aryehlieberman.dfasimv2;
  */
 
 public class Transition {
-    State source;
-    State destination;
-    char ch;
+    private State source;
+    private State destination;
+    private char ch;
 
     public State getSource() {
         return source;

@@ -39,4 +39,8 @@ public class State {
         this.y = y;
         this.identifier = identifier;
     }
+    @Override
+    public String toString(){
+        return identifier;
+    }
 }
