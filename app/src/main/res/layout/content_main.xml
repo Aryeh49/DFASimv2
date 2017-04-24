@@ -8,6 +8,7 @@
     tools:context="com.example.aryehlieberman.dfasimv2.MainActivity"
     tools:showIn="@layout/app_bar_main">
     <com.example.aryehlieberman.dfasimv2.CustomView
+        android:id="@+id/custom_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
          />

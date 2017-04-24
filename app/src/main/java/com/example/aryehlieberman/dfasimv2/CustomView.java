@@ -1,6 +1,8 @@
 package com.example.aryehlieberman.dfasimv2;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -14,6 +16,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Created by aryehlieberman on 4/23/17.
@@ -29,7 +32,11 @@ public class CustomView extends View {
 
     public CustomView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        DFASim dfa = new DFASim();
+        HashSet<Character> alphabet = new HashSet<>();
+        alphabet.add('a');
+        alphabet.add('b');
+        alphabet.add('c');
+        DFASim dfa = new DFASim(alphabet);
         dfas = new HashMap<>();
         dfas.put("first",dfa);
         currentDFA = "first";
@@ -40,8 +47,11 @@ public class CustomView extends View {
 
     public CustomView(Context context) {
         super(context);
-        DFASim dfa = new DFASim();
-        dfas = new HashMap<>();
+        HashSet<Character> alphabet = new HashSet<>();
+        alphabet.add('a');
+        alphabet.add('b');
+        alphabet.add('c');
+        DFASim dfa = new DFASim(alphabet);        dfas = new HashMap<>();
         dfas.put("first",dfa);
         currentDFA = "first";
         radius = 60;
@@ -49,8 +59,11 @@ public class CustomView extends View {
 
     public CustomView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        DFASim dfa = new DFASim();
-        dfas = new HashMap<>();
+        HashSet<Character> alphabet = new HashSet<>();
+        alphabet.add('a');
+        alphabet.add('b');
+        alphabet.add('c');
+        DFASim dfa = new DFASim(alphabet);        dfas = new HashMap<>();
         dfas.put("first",dfa);
         currentDFA = "first";
         radius = 60;
@@ -60,8 +73,11 @@ public class CustomView extends View {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public CustomView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        DFASim dfa = new DFASim();
-        dfas = new HashMap<>();
+        HashSet<Character> alphabet = new HashSet<>();
+        alphabet.add('a');
+        alphabet.add('b');
+        alphabet.add('c');
+        DFASim dfa = new DFASim(alphabet);        dfas = new HashMap<>();
         dfas.put("first",dfa);
         currentDFA = "first";
         radius = 60;
@@ -74,14 +90,21 @@ public class CustomView extends View {
 
         canvas.drawColor(Color.WHITE);
         for(State x: dfa.getStates()){
+            if(dfa.getAcceptStates().contains(x)){
+                Paint p = new Paint();
+                p.setColor(Color.BLACK);
+                canvas.drawCircle(x.getX(), x.getY(), radius + 30, p);
+            }
             if(x == selectedState1 || x == selectedState2) {
                 Paint p = new Paint();
-                p.setColor(Color.YELLOW);
+                p.setColor(Color.GREEN);
                 canvas.drawCircle(x.getX(), x.getY(), radius, p);
 
             }
             else {
-                canvas.drawCircle(x.getX(), x.getY(), radius, new Paint(Color.BLUE));
+                Paint p = new Paint();
+                p.setColor(Color.BLUE);
+                canvas.drawCircle(x.getX(), x.getY(), radius, p);
             }
 
         }
@@ -95,10 +118,10 @@ public class CustomView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        DFASim dfa = dfas.get(currentDFA);
+        final DFASim dfa = dfas.get(currentDFA);
         switch(event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                State state = touchingState(dfa,event.getX(), event.getY());
+                final State state = touchingState(dfa,event.getX(), event.getY());
                 if(state == null){
                     if(selectedState1 == null){
                         dfa.getStates().add(new State(event.getX(), event.getY(), "q"));
@@ -111,6 +134,36 @@ public class CustomView extends View {
                 else {
                     if(selectedState1 == null) selectedState1 = state;
                     else {
+                        if(selectedState1 == state){
+                            AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+                            builder.setTitle("What do you want to do?");
+                            CharSequence options[] = new CharSequence[] {"delete", "name", "set start", "set accept"};
+                            builder.setItems(options, new AlertDialog.OnClickListener(){
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which){
+                                        case 0:
+                                            dfa.getStates().remove(state);
+                                            selectedState1 = null;
+                                            invalidate();
+                                            break;
+                                        case 1:
+                                            //TODO
+                                            break;
+                                        case 2:
+                                            dfa.setStartState(selectedState1);
+                                            invalidate();
+                                            break;
+                                        case 3:
+                                            dfa.getAcceptStates().add(selectedState1);
+                                            invalidate();
+                                            break;
+                                    }
+                                }
+                            });
+                            builder.show();
+                        }
                         selectedState2 = state;
                         connectStates(dfa,selectedState1, selectedState2, 'q');
 
@@ -123,7 +176,7 @@ public class CustomView extends View {
     }
     private State touchingState(DFASim dfa, float x, float y){
         for(State state: dfa.getStates()){
-            if(distance(state.getX(),state.getY(), x, y) < radius){
+            if(distance(state.getX(),state.getY(), x, y) < radius * 2){
                 return state;
             }
         }
@@ -138,5 +191,8 @@ public class CustomView extends View {
         dfa.getTransitions().add(new Transition(state1, state2,ch ));
         selectedState1 = null;
         selectedState2 = null;
+    }
+    public void runDFA(){
+
     }
 }
