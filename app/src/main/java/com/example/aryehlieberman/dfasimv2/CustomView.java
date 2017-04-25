@@ -37,52 +37,29 @@ public class CustomView extends View implements Observer {
 
     public CustomView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        construct();
+    }
+    public CustomView(Context context) {
+        super(context);
+        construct();
+    }
+    public CustomView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        construct();
+    }
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public CustomView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+         construct();
+    }
+    private void construct(){
         HashSet<Character> alphabet = new HashSet<>();
         alphabet.add('a');
         alphabet.add('b');
         alphabet.add('c');
         DFASim dfa = new DFASim(alphabet);
+        dfa.addObserver(this);
         dfas = new HashMap<>();
-        dfas.put("first",dfa);
-        currentDFA = "first";
-        radius = 60;
-    }
-
-
-
-    public CustomView(Context context) {
-        super(context);
-        HashSet<Character> alphabet = new HashSet<>();
-        alphabet.add('a');
-        alphabet.add('b');
-        alphabet.add('c');
-        DFASim dfa = new DFASim(alphabet);        dfas = new HashMap<>();
-        dfas.put("first",dfa);
-        currentDFA = "first";
-        radius = 60;
-    }
-
-    public CustomView(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        HashSet<Character> alphabet = new HashSet<>();
-        alphabet.add('a');
-        alphabet.add('b');
-        alphabet.add('c');
-        DFASim dfa = new DFASim(alphabet);        dfas = new HashMap<>();
-        dfas.put("first",dfa);
-        currentDFA = "first";
-        radius = 60;
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public CustomView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        HashSet<Character> alphabet = new HashSet<>();
-        alphabet.add('a');
-        alphabet.add('b');
-        alphabet.add('c');
-        DFASim dfa = new DFASim(alphabet);        dfas = new HashMap<>();
         dfas.put("first",dfa);
         currentDFA = "first";
         radius = 60;
@@ -98,12 +75,13 @@ public class CustomView extends View implements Observer {
 
 
             drawArrow(canvas, t.getSource().getX(), t.getSource().getY(), t.getDestination().getX(), t.getDestination().getY());
-//            Paint paint = new Paint();
-//            paint.setTextSize(50f);
-//            paint.setTextAlign(Paint.Align.LEFT);
-//            float x = (t.getDestination().getX() - t.getSource().getX()) / 2 + t.getSource().getX();
-//            float y = (t.getDestination().getY() - t.getSource().getY()) / 2 + t.getSource().getY();
-//            canvas.drawText("" + t.getCh(), x,y,paint);
+
+            Paint paint = new Paint();
+            paint.setTextSize(30f);
+            paint.setTextAlign(Paint.Align.LEFT);
+            float x = (t.getDestination().getX() - t.getSource().getX()) / 2 + t.getSource().getX();
+            float y = (t.getDestination().getY() - t.getSource().getY()) / 2 + t.getSource().getY();
+            canvas.drawText("" + t.getCh(), x,y,paint);
 
 
         }
@@ -187,7 +165,23 @@ public class CustomView extends View implements Observer {
                                     invalidate();
                                     break;
                                 case 1:
-                                    //TODO
+                                    dialog.cancel();
+                                    AlertDialog.Builder builder1 = new AlertDialog.Builder(getContext());
+                                    builder1.setTitle("Enter Character");
+                                    final EditText input = new EditText(getContext());
+                                    builder1.setView(input);
+                                    builder1.setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            transition.setCh(input.getText().toString().charAt(0));
+                                        }
+                                    });
+                                    builder1.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.cancel();
+                                        }
+                                    });
                                     break;
                                 case 2:
                                     State temp = transition.getDestination();
@@ -216,19 +210,44 @@ public class CustomView extends View implements Observer {
                         if(selectedState1 == state){
                             AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
                             builder.setTitle("What do you want to do?");
-                            CharSequence options[] = new CharSequence[] {"delete", "name", "set start", "set accept", "loop"};
+                            CharSequence options[] = new CharSequence[] {"delete", "name", "set start", "set accept", "loop", "cancel"};
                             builder.setItems(options, new AlertDialog.OnClickListener(){
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     switch (which){
                                         case 0:
+                                            ArrayList<Transition> tr = new ArrayList<Transition>();
+                                            for(Transition t: dfa.getTransitions()){
+                                                if(t.getSource() == state || t.getDestination() == state){
+                                                    tr.add(t);
+                                                }
+                                            }
+                                            for(Transition t: tr){
+                                                dfa.getTransitions().remove(t);
+                                            }
                                             dfa.getStates().remove(state);
                                             selectedState1 = null;
                                             invalidate();
                                             break;
                                         case 1:
-                                            //TODO
+                                            AlertDialog.Builder builder1 = new AlertDialog.Builder(getContext());
+                                            builder1.setTitle("Enter Name");
+                                            final EditText input = new EditText(getContext());
+                                            builder1.setView(input);
+                                            builder1.setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    state.setIdentifier(input.getText().toString());
+                                                }
+                                            });
+                                            builder1.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.cancel();
+                                                }
+                                            });
+                                            builder1.show();
                                             break;
                                         case 2:
                                             dfa.setStartState(state);
@@ -241,14 +260,19 @@ public class CustomView extends View implements Observer {
                                         case 4:
                                             dfa.getTransitions().add(new Transition(state, state, 'q'));
                                             invalidate();
+                                            break;
+                                        case 5:
+                                            dialog.dismiss();
+                                            break;
                                     }
+                                    selectedState1 = null;
                                 }
                             });
                             builder.show();
                         }
                         else {
                             selectedState2 = state;
-                            connectStates(dfa, selectedState1, selectedState2, 'q');
+                            connectStates(dfa, selectedState1, selectedState2);
                         }
 
                     }
@@ -267,6 +291,7 @@ public class CustomView extends View implements Observer {
         return null;
     }
     private Transition touchingTransition(DFASim dfa, float x, float y){
+        //TODO
         float slope;
         for(Transition transition: dfa.getTransitions()){
             slope = (transition.getDestination().getY() - transition.getSource().getY())/
@@ -282,9 +307,27 @@ public class CustomView extends View implements Observer {
         float dy = y1 - y2;
         return Math.sqrt(dx*dx + dy*dy);
     }
-    private void connectStates(DFASim dfa, State state1, State state2, char ch){
+    private void connectStates(DFASim dfa, State state1, State state2){
         //TODO make it deterministic
-        dfa.getTransitions().add(new Transition(state1, state2,ch ));
+        final Transition transition = new Transition(state1, state2,'\0' );
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(getContext());
+        builder1.setTitle("Enter Character");
+        final EditText input = new EditText(getContext());
+        builder1.setView(input);
+        builder1.setPositiveButton("Set", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                transition.setCh(input.getText().toString().charAt(0));
+            }
+        });
+        builder1.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder1.show();
+        dfa.getTransitions().add(transition);
         selectedState1 = null;
         selectedState2 = null;
     }
@@ -297,22 +340,9 @@ public class CustomView extends View implements Observer {
             @Override
             public void onClick(DialogInterface dialog, int which){
                 dfas.get(currentDFA).setInput(input.getText().toString());
-                dialog.cancel();
+                dialog.dismiss();
                 Thread a = new Thread(dfas.get(currentDFA));
                 a.start();
-                try {
-                    a.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                AlertDialog.Builder d = new AlertDialog.Builder(getContext());
-                if(dfas.get(currentDFA).isFailed()){
-                    d.setTitle("Rejected");
-                }
-                else{
-                    d.setTitle("Accepted");
-                }
-                d.show();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -328,7 +358,19 @@ public class CustomView extends View implements Observer {
     }
 
     @Override
-    public void update(Observable o, Object arg) {
+    public void update(Observable o, Object arg)
+    {
+        boolean finished = (boolean) arg;
+        if(finished){
+            AlertDialog.Builder d = new AlertDialog.Builder(getContext());
+            if(dfas.get(currentDFA).isFailed()){
+                d.setTitle("Rejected");
+            }
+            else{
+                d.setTitle("Accepted");
+            }
+            d.show();
+        }
         invalidate();
     }
 }

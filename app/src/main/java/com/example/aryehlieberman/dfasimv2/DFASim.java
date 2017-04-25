@@ -13,6 +13,7 @@ public class DFASim extends Observable implements Runnable {
     private ArrayList<Transition> transitions;
     private State startState;
     private ArrayList<State> acceptStates;
+    private RunState runState;
 
     public void setInput(String input) {
         this.input = input;
@@ -89,15 +90,16 @@ public class DFASim extends Observable implements Runnable {
     public void run() {
         currentState = startState;
         for(int i = 0; i < input.length(); i++){
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             for(Transition t: transitions){
                 if(t.getSource() == currentState && t.getCh() == input.charAt(i)){
                     currentState = t.getDestination();
                 notifyObservers();
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
 
                 }
             }
@@ -105,9 +107,11 @@ public class DFASim extends Observable implements Runnable {
         }
         if(acceptStates.contains(currentState)){
             failed = false;
+            notifyObservers();
         }
         else {
             failed = true;
+            notifyObservers();
         }
     }
 }
