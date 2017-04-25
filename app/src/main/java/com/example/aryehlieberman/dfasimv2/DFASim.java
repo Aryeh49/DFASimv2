@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Observable;
 
 /**
- * Created by aryehlieberman on 4/23/17.
+ * Created by Aryeh Lieberman on 4/23/17.
  */
 
 public class DFASim extends Observable implements Runnable {
@@ -27,11 +27,7 @@ public class DFASim extends Observable implements Runnable {
 
     private State currentState;
 
-    public boolean isFailed() {
-        return failed;
-    }
 
-    private boolean failed;
 
     public State getStartState() {
         return startState;
@@ -81,36 +77,49 @@ public class DFASim extends Observable implements Runnable {
         acceptStates = new ArrayList<>();
         transitions = new ArrayList<>();
         currentState = getStartState();
-        failed = false;
+        runState = RunState.READY;
         input = "q";
 
     }
 
+    public RunState getRunState() {
+        return runState;
+    }
+
+    public void setRunState(RunState runState) {
+        this.runState = runState;
+    }
+
     @Override
-    public void run() {
+    public void run() { 
+        runState = RunState.RUNNING;
         currentState = startState;
+        int x = countObservers();
         for(int i = 0; i < input.length(); i++){
             try {
-                Thread.sleep(5000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             for(Transition t: transitions){
                 if(t.getSource() == currentState && t.getCh() == input.charAt(i)){
                     currentState = t.getDestination();
-                notifyObservers();
-
+                    setChanged();
+                    notifyObservers();
+                    break;
 
                 }
             }
 
         }
         if(acceptStates.contains(currentState)){
-            failed = false;
+            runState = RunState.ACCEPTED;
+            setChanged();
             notifyObservers();
         }
         else {
-            failed = true;
+            runState = RunState.REJECTED;
+            setChanged();
             notifyObservers();
         }
     }

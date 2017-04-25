@@ -1,5 +1,6 @@
 package com.example.aryehlieberman.dfasimv2;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.transition.TransitionSet;
@@ -111,6 +113,21 @@ public class CustomView extends View implements Observer {
             canvas.drawText(x.getIdentifier(), x.getX(), x.getY(), paint);
 
         }
+        AlertDialog.Builder d = new AlertDialog.Builder(getContext());
+        if(dfas.get(currentDFA).getRunState() == RunState.REJECTED){
+            d.setTitle("Rejected");
+
+            selectedState2 = null;
+            selectedState1 = null;
+            d.show();
+        }
+        else if(dfas.get(currentDFA).getRunState() == RunState.ACCEPTED){
+            d.setTitle("Accepted");
+            selectedState1 = null;
+            selectedState2 = null;
+            d.show();
+        }
+        dfa.setRunState(RunState.READY);
 
     }
     private void drawArrow(Canvas canvas, float srcX, float srcY, float destX, float destY){
@@ -360,17 +377,6 @@ public class CustomView extends View implements Observer {
     @Override
     public void update(Observable o, Object arg)
     {
-        boolean finished = (boolean) arg;
-        if(finished){
-            AlertDialog.Builder d = new AlertDialog.Builder(getContext());
-            if(dfas.get(currentDFA).isFailed()){
-                d.setTitle("Rejected");
-            }
-            else{
-                d.setTitle("Accepted");
-            }
-            d.show();
-        }
-        invalidate();
+        this.postInvalidate();
     }
 }
