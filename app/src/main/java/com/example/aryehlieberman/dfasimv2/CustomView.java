@@ -18,6 +18,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,9 +26,7 @@ import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
 
-/**
- * Created by aryehlieberman on 4/23/17.
- */
+
 
 public class CustomView extends View implements Observer {
     private HashMap<String,DFASim> dfas;
@@ -35,7 +34,11 @@ public class CustomView extends View implements Observer {
     private float radius;
     private State selectedState1;
     private State selectedState2;
+    TextView inputString;
 
+    public void setInputString(TextView inputString) {
+        this.inputString = inputString;
+    }
 
     public CustomView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -141,7 +144,7 @@ public class CustomView extends View implements Observer {
         else {
             double theta = Math.atan2((destY - srcY), (destX - srcX));
             //double theta = destX - srcX > 0 ? Math.atan((destY - srcY) / (destX - srcX)) : Math.PI + Math.atan((destY - srcY) / (destX - srcX));
-            float x1, y1, x2, y2;
+            float  x2, y2;
 
 
             x2 = destX - (float) (radius * Math.cos(theta));
@@ -234,7 +237,7 @@ public class CustomView extends View implements Observer {
                                 public void onClick(DialogInterface dialog, int which) {
                                     switch (which){
                                         case 0:
-                                            ArrayList<Transition> tr = new ArrayList<Transition>();
+                                            ArrayList<Transition> tr = new ArrayList<>();
                                             for(Transition t: dfa.getTransitions()){
                                                 if(t.getSource() == state || t.getDestination() == state){
                                                     tr.add(t);
@@ -349,6 +352,8 @@ public class CustomView extends View implements Observer {
         selectedState2 = null;
     }
     public void runDFA() {
+        selectedState1 = null;
+        selectedState2 = null;
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder.setTitle("Input String");
         final EditText input = new EditText(this.getContext());
@@ -356,7 +361,9 @@ public class CustomView extends View implements Observer {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which){
-                dfas.get(currentDFA).setInput(input.getText().toString());
+                String in = input.getText().toString();
+                inputString.setText(in);
+                dfas.get(currentDFA).setInput(in);
                 dialog.dismiss();
                 Thread a = new Thread(dfas.get(currentDFA));
                 a.start();

@@ -91,7 +91,7 @@ public class DFASim extends Observable implements Runnable {
     }
 
     @Override
-    public void run() { 
+    public void run() {
         runState = RunState.RUNNING;
         currentState = startState;
         int x = countObservers();
